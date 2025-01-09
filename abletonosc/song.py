@@ -39,6 +39,7 @@ class SongHandler(AbletonOSCHandler):
             "tap_tempo",
             "trigger_session_record",
             "undo"
+            
         ]:
             callback = partial(self._call_method, self.song, method)
             self.osc_server.add_handler("/live/song/%s" % method, callback)
@@ -66,6 +67,7 @@ class SongHandler(AbletonOSCHandler):
             "signature_denominator",
             "signature_numerator",
             "tempo"
+            
         ]
 
         #--------------------------------------------------------------------------------
@@ -76,7 +78,9 @@ class SongHandler(AbletonOSCHandler):
             "can_undo",
             "is_playing",
             "song_length",
-            "session_record_status"
+            "session_record_status",
+            "start_time",
+            "get_current_beats_song_time"
         ]
 
         for prop in properties_r + properties_rw:

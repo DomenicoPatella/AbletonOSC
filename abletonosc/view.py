@@ -7,11 +7,14 @@ class ViewHandler(AbletonOSCHandler):
         super().__init__(manager)
         self.class_identifier = "view"
 
+        
+
     def init_api(self):
         def get_selected_scene(params: Optional[Tuple] = ()):
             return (list(self.song.scenes).index(self.song.view.selected_scene),)
 
         def get_selected_track(params: Optional[Tuple] = ()):
+            log_object_info(self.song.view, obj_name="Example")
             return (list(self.song.tracks).index(self.song.view.selected_track),)
 
         def get_selected_clip(params: Optional[Tuple] = ()):
@@ -34,6 +37,16 @@ class ViewHandler(AbletonOSCHandler):
             device = self.song.tracks[params[0]].devices[params[1]]
             self.song.view.select_device(device)
             return params[0], params[1]
+        
+        def log_object_info(obj, obj_name="object"):
+         attributes = dir(obj)
+         self.logger.info(f"Oggetto '{obj_name}': elenco metodi e proprietà:")
+         for attr in attributes:
+            try:
+                attr_value = getattr(obj, attr)  # Ottieni il valore dell'attributo
+                self.logger.info(f"  - {attr}: {repr(attr_value)}")
+            except Exception as e:
+                self.logger.info(f"  - {attr}: (non accessibile, errore: {e})")
 
         self.osc_server.add_handler("/live/view/get/selected_scene", get_selected_scene)
         self.osc_server.add_handler("/live/view/get/selected_track", get_selected_track)
