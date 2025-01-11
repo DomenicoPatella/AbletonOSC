@@ -36,21 +36,14 @@ class ApplicationHandler(AbletonOSCHandler):
         self.osc_server.add_handler("/live/application/get/version_string", get_version_string)
         self.osc_server.send("/live/application/get/version_string")
         
+       
         # test pointer class view 
-        def get_current_smpte_song_time(_) -> Tuple:
-            song = Live.Song.Song
-            ##self.logger.info(song.get_current_smpte_song_time(0))
-            return song.get_current_smpte_song_time(0),
-        self.osc_server.add_handler("/live/application/get/get_current_beats_song_time", get_current_smpte_song_time)
-        self.osc_server.send("/live/application/get/get_current_beats_song_time")
-
-        # test pointer class view 
-        def set_or_delete_cue(_) :
-            song = Live.Song.Song
-            song.set_or_delete_cue(),
-            return ("cue")
-        self.osc_server.add_handler("/live/application/set/set_or_delete_cue", set_or_delete_cue)
-        self.osc_server.send("/live/application/set/set_or_delete_cue")
+        #def set_or_delete_cue(_) :
+        #    song = Live.Song.Song
+        #    song.set_or_delete_cue(),
+        #    return ("cue")
+        #self.osc_server.add_handler("/live/application/set/set_or_delete_cue", set_or_delete_cue)
+        #self.osc_server.send("/live/application/set/set_or_delete_cue")
 
 
 
@@ -60,10 +53,17 @@ class ApplicationHandler(AbletonOSCHandler):
             view=application.view
             view.toggle_browse()
             return str("toogle"),
-        self.osc_server.add_handler("/live/application/set/toggle_browser", set_toggle_browser)
-        self.osc_server.send("/live/application/set/toggle_browser")
+        self.osc_server.add_handler("/live/application/view/set/toggle_browser", set_toggle_browser)
+        self.osc_server.send("/live/application/view/set/toggle_browser")
 
-
+       # test pointer class view 
+        def show_view(params: Optional[Tuple] = ()):
+            application = Live.Application.get_application()
+            view=application.view
+            view.show_view(params[0])
+            return str("show_view"),
+        self.osc_server.add_handler("/live/application/view/set/show_view", show_view)
+        self.osc_server.send("/live/application/view/set/show_view")
 
 
         def set_scroll_view(params: Optional[Tuple] = ()):

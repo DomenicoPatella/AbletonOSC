@@ -33,6 +33,8 @@ class SongHandler(AbletonOSCHandler):
             "jump_to_prev_cue",
             "jump_to_next_cue",
             "redo",
+            "re_enable_automation",
+            "set_or_delete_cue",
             "start_playing",
             "stop_all_clips",
             "stop_playing",
@@ -64,8 +66,10 @@ class SongHandler(AbletonOSCHandler):
             "punch_out",
             "record_mode",
             "session_record",
+            "session_automation_record",
             "signature_denominator",
             "signature_numerator",
+            "start_time",
             "tempo"
             
         ]
@@ -76,11 +80,11 @@ class SongHandler(AbletonOSCHandler):
         properties_r = [
             "can_redo",
             "can_undo",
+            "can_capture_midi",
             "is_playing",
             "song_length",
-            "session_record_status",
-            "start_time",
-            "get_current_beats_song_time"
+            "session_record_status"
+            
         ]
 
         for prop in properties_r + properties_rw:
@@ -89,6 +93,21 @@ class SongHandler(AbletonOSCHandler):
             self.osc_server.add_handler("/live/song/stop_listen/%s" % prop, partial(self._stop_listen, self.song, prop))
         for prop in properties_rw:
             self.osc_server.add_handler("/live/song/set/%s" % prop, partial(self._set_property, self.song, prop))
+
+
+        # Callbacks for Song : get_current_beats_song_time
+        def get_current_beats_song_time(_) -> Tuple:
+            beat = Live.Song.BeatTime
+            beat=self.song.get_current_beats_song_time()
+            return ( beat.bars,beat.beats,beat.sub_division,beat.ticks)
+        self.osc_server.add_handler("/live/song/get_current_beats_song_time", get_current_beats_song_time)
+        
+        # Callbacks for Song : get_current_smpte_song_time()
+        def get_current_smpte_song_time(_) -> Tuple:
+            smpt = Live.Song.SmptTime
+            smpt=self.song.get_current_smpte_song_time(0)
+            return ( smpt.frames,smpt.hours,smpt.minutes,smpt.seconds)
+        self.osc_server.add_handler("/live/song/get_current_smpte_song_time", get_current_smpte_song_time)
 
         #--------------------------------------------------------------------------------
         # Callbacks for Song: Track properties

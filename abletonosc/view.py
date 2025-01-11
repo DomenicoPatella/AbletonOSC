@@ -1,3 +1,4 @@
+import Live
 from functools import partial
 from typing import Optional, Tuple, Any
 from .handler import AbletonOSCHandler
@@ -38,6 +39,11 @@ class ViewHandler(AbletonOSCHandler):
             self.song.view.select_device(device)
             return params[0], params[1]
         
+        #def get_current_beats_song_time(_) -> Tuple:
+        #    beat = Live.Song.BeatTime
+        #    self.logger.info(self.song.get_current_beats_song_time(beat))
+        #    return self.song.get_current_beats_song_time(beat)
+        
         def log_object_info(obj, obj_name="object"):
          attributes = dir(obj)
          self.logger.info(f"Oggetto '{obj_name}': elenco metodi e proprietà:")
@@ -56,6 +62,8 @@ class ViewHandler(AbletonOSCHandler):
         self.osc_server.add_handler("/live/view/set/selected_track", set_selected_track)
         self.osc_server.add_handler("/live/view/set/selected_clip", set_selected_clip)
         self.osc_server.add_handler("/live/view/set/selected_device", set_selected_device)
+
+        #self.osc_server.add_handler("/live/application/get_current_beats_song_time", get_current_beats_song_time)
         
         self.osc_server.add_handler('/live/view/start_listen/selected_scene', partial(self._start_listen, self.song.view, "selected_scene", getter=get_selected_scene))
         self.osc_server.add_handler('/live/view/start_listen/selected_track', partial(self._start_listen, self.song.view, "selected_track", getter=get_selected_track))
