@@ -81,6 +81,7 @@ class SongHandler(AbletonOSCHandler):
             "can_redo",
             "can_undo",
             "can_capture_midi",
+            "re_enable_automation_enabled",
             "is_playing",
             "song_length",
             "session_record_status"
