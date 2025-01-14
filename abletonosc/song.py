@@ -110,12 +110,6 @@ class SongHandler(AbletonOSCHandler):
             return ( smpt.frames,smpt.hours,smpt.minutes,smpt.seconds)
         self.osc_server.add_handler("/live/song/get_current_smpte_song_time", get_current_smpte_song_time)
 
-        # Callbacks for Song : get_current_smpte_song_time()
-        def cuepoint_jumo(_) :
-            Live.Song.CuePoint.jump()
-            return ( "cuepoint_jump")
-        self.osc_server.add_handler("/live/song/cuepoint_jumo", cuepoint_jumo)
-
         #--------------------------------------------------------------------------------
         # Callbacks for Song: Track properties
         #--------------------------------------------------------------------------------

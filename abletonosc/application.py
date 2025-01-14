@@ -36,8 +36,8 @@ class ApplicationHandler(AbletonOSCHandler):
         self.osc_server.add_handler("/live/application/get/version_string", get_version_string)
         self.osc_server.send("/live/application/get/version_string")
         
-     
-       # test pointer class view 
+       # Application.view toggle_browser()
+       # Displays the device chain and the browser and activates Hot-Swap Mode for the selected device. Calling this function again deactivates Hot-Swap Mode.
         def set_toggle_browser(_):
             application = Live.Application.get_application()
             view=application.view
@@ -46,16 +46,8 @@ class ApplicationHandler(AbletonOSCHandler):
         self.osc_server.add_handler("/live/application/view/set/toggle_browser", set_toggle_browser)
         self.osc_server.send("/live/application/view/set/toggle_browser")
 
-       # test pointer class view 
-        def show_view(params: Optional[Tuple] = ()):
-            application = Live.Application.get_application()
-            view=application.view
-            view.show_view(params[0])
-            return str("show_view"),
-        self.osc_server.add_handler("/live/application/view/set/show_view", show_view)
-        self.osc_server.send("/live/application/view/set/show_view")
-
-         # test pointer class view 
+       # Application.view :is_view_arranger() 
+       # Query if view arranger is visible
         def is_view_arranger(_):
             application = Live.Application.get_application()
             view=application.view
@@ -64,7 +56,8 @@ class ApplicationHandler(AbletonOSCHandler):
         self.osc_server.add_handler("/live/application/view/get/is_view_arranger", is_view_arranger)
         self.osc_server.send("/live/application/view/get/is_view_arranger")
 
-       # test pointer class view 
+       # Application.view :is_view_session() 
+       # Query if view session is visible 
         def is_view_session(_):
             application = Live.Application.get_application()
             view=application.view
@@ -73,38 +66,47 @@ class ApplicationHandler(AbletonOSCHandler):
         self.osc_server.add_handler("/live/application/view/get/is_view_session", is_view_session)
         self.osc_server.send("/live/application/view/get/is_view_session")
 
-
-        def set_scroll_view(params: Optional[Tuple] = ()):
+        # Application.view :show_view(arg1) 'Arranger' , 'Browser' , 'Session' ,  'Detail/DeviceChain'  
+        def show_view(params: Optional[Tuple] = ()):
             application = Live.Application.get_application()
             view=application.view
-            ##  Parameters: direction  view_name  modifier_pressed
+            view.show_view(params[0])
+            return str("show_view"),
+        self.osc_server.add_handler("/live/application/view/set/show_view", show_view)
+        self.osc_server.send("/live/application/view/set/show_view")
+
+         ##  Parameters: direction  view_name  modifier_pressed
             #
             # direction [int] is 0 = up, 1 = down, 2 = left, 3 = right
             # modifier_pressed [bool] If view_name is "Arranger" and modifier_pressed is 1 and direction is left or right, then the size of the selected time region is modified, otherwise the position of the playback cursor is moved.
             # Not all views are scrollable, and not in all directions. Currently, only the Arranger , Browser , Session , and Detail/DeviceChain views can be scrolled.
             # You can also pass an empty view_name " " , which refers to the Arrangement or Session View (whichever view is visible).
             #view.zoom_view(params[0],params[1],params[2])
+        def set_scroll_view(params: Optional[Tuple] = ()):
+            application = Live.Application.get_application()
+            view=application.view
             view.scroll_view(params[0],params[1],params[2])
             return str("scroll"),
         self.osc_server.add_handler("/live/application/set/scroll_view", set_scroll_view)
         self.osc_server.send("/live/application/set/scroll_view")
 
-        def set_zoom_view(params: Optional[Tuple] = ()):
-            application = Live.Application.get_application()
-            view=application.view
-            ##  Parameters: direction  view_name  modifier_pressed
+        ##  Parameters: direction  view_name  modifier_pressed
             #
             # direction [int] is 0 = up, 1 = down, 2 = left, 3 = right
             # modifier_pressed [bool] If view_name is "Arranger" and modifier_pressed is 1 and direction is left or right, then the size of the selected time region is modified, otherwise the position of the playback cursor is moved.
             # Not all views are scrollable, and not in all directions. Currently, only the Arranger , Browser , Session , and Detail/DeviceChain views can be scrolled.
             # You can also pass an empty view_name " " , which refers to the Arrangement or Session View (whichever view is visible).
             #view.zoom_view(params[0],params[1],params[2])
+        def set_zoom_view(params: Optional[Tuple] = ()):
+            application = Live.Application.get_application()
+            view=application.view
+            
             view.zoom_view(params[0],params[1],params[2])
             return str("scroll"),
         self.osc_server.add_handler("/live/application/set/zoom_view", set_zoom_view)
         self.osc_server.send("/live/application/set/zoom_view")    
 
-
+        # Debug purpose only
         def log_object_info(obj, obj_name="object"):
          attributes = dir(obj)
          self.logger.info(f"Oggetto '{obj_name}': elenco metodi e proprietà:")

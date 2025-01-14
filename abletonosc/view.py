@@ -38,21 +38,7 @@ class ViewHandler(AbletonOSCHandler):
             self.song.view.select_device(device)
             return params[0], params[1]
         
-        #def get_current_beats_song_time(_) -> Tuple:
-        #    beat = Live.Song.BeatTime
-        #    self.logger.info(self.song.get_current_beats_song_time(beat))
-        #    return self.song.get_current_beats_song_time(beat)
-        
-        def log_object_info(obj, obj_name="object"):
-         attributes = dir(obj)
-         self.logger.info(f"Oggetto '{obj_name}': elenco metodi e proprietà:")
-         for attr in attributes:
-            try:
-                attr_value = getattr(obj, attr)  # Ottieni il valore dell'attributo
-                self.logger.info(f"  - {attr}: {repr(attr_value)}")
-            except Exception as e:
-                self.logger.info(f"  - {attr}: (non accessibile, errore: {e})")
-
+       
         self.osc_server.add_handler("/live/view/get/selected_scene", get_selected_scene)
         self.osc_server.add_handler("/live/view/get/selected_track", get_selected_track)
         self.osc_server.add_handler("/live/view/get/selected_clip", get_selected_clip)

@@ -65,7 +65,7 @@ class AbletonOSCHandler(Component):
                 value = getter(params)
             if type(value) is not tuple:
                 value = (value,)
-            ##self.logger.info("Property %s changed of %s %s: %s" % (prop, self.class_identifier, str(params), value))
+            self.logger.info("Property %s changed of %s %s: %s" % (prop, self.class_identifier, str(params), value))
             osc_address = "/live/%s/get/%s" % (self.class_identifier, prop)
             self.osc_server.send(osc_address, (*params, *value,))
 
