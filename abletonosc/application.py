@@ -36,17 +36,7 @@ class ApplicationHandler(AbletonOSCHandler):
         self.osc_server.add_handler("/live/application/get/version_string", get_version_string)
         self.osc_server.send("/live/application/get/version_string")
         
-       
-        # test pointer class view 
-        #def set_or_delete_cue(_) :
-        #    song = Live.Song.Song
-        #    song.set_or_delete_cue(),
-        #    return ("cue")
-        #self.osc_server.add_handler("/live/application/set/set_or_delete_cue", set_or_delete_cue)
-        #self.osc_server.send("/live/application/set/set_or_delete_cue")
-
-
-
+     
        # test pointer class view 
         def set_toggle_browser(_):
             application = Live.Application.get_application()
@@ -64,6 +54,24 @@ class ApplicationHandler(AbletonOSCHandler):
             return str("show_view"),
         self.osc_server.add_handler("/live/application/view/set/show_view", show_view)
         self.osc_server.send("/live/application/view/set/show_view")
+
+         # test pointer class view 
+        def is_view_arranger(_):
+            application = Live.Application.get_application()
+            view=application.view
+            res=view.is_view_visible("Arranger")
+            return res,
+        self.osc_server.add_handler("/live/application/view/get/is_view_arranger", is_view_arranger)
+        self.osc_server.send("/live/application/view/get/is_view_arranger")
+
+       # test pointer class view 
+        def is_view_session(_):
+            application = Live.Application.get_application()
+            view=application.view
+            res=view.is_view_visible("Session")
+            return res,
+        self.osc_server.add_handler("/live/application/view/get/is_view_session", is_view_session)
+        self.osc_server.send("/live/application/view/get/is_view_session")
 
 
         def set_scroll_view(params: Optional[Tuple] = ()):
