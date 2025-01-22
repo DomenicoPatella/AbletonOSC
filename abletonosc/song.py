@@ -110,6 +110,18 @@ class SongHandler(AbletonOSCHandler):
             return ( smpt.frames,smpt.hours,smpt.minutes,smpt.seconds)
         self.osc_server.add_handler("/live/song/get_current_smpte_song_time", get_current_smpte_song_time)
 
+        #---------------------------------------------------------------------------------
+        # Master Track Mixer device
+        # --------------------------------------------------------------------------------  
+        mixer_properties_rw = ["volume", "panning","cue_volume"]
+        for prop in mixer_properties_rw:
+          self.osc_server.add_handler("/live/song/get_master/%s" % prop, partial(self._get_mixer_property, self.song.master_track, prop))
+          self.osc_server.add_handler("/live/song/set_master/%s" % prop, partial(self._set_mixer_property, self.song.master_track, prop))
+          self.osc_server.add_handler("/live/song/start_master_listen/%s" % prop, partial(self._start_mixer_listen, self.song.master_track, prop)) 
+          self.osc_server.add_handler("/live/song/stop_master_listen/%s" % prop, partial(self._stop_mixer_listen, self.song.master_track, prop)) 
+        
+        
+
         #--------------------------------------------------------------------------------
         # Callbacks for Song: Track properties
         #--------------------------------------------------------------------------------
@@ -305,6 +317,53 @@ class SongHandler(AbletonOSCHandler):
                 (int(self.song.current_song_time) > int(self.last_song_time)):
             self.osc_server.send("/live/song/get/beat", (int(self.song.current_song_time),))
         self.last_song_time = self.song.current_song_time
+
+    #--------------------------------------------------------------------------------
+    # Callbacks for Song: Master Track properties (Volume/Panning) -Listen
+    #--------------------------------------------------------------------------------
+
+    def _get_mixer_property(self,target, prop, params: Optional[Tuple] = ()) -> Tuple[Any]:
+            parameter_object = getattr(target.mixer_device, prop)
+            self.logger.info("Getting property for %s: %s = %s" % (self.class_identifier, prop, parameter_object.value))
+            return parameter_object.value,
+
+    def _set_mixer_property(self,target, prop, params: Optional[Tuple] = ()) -> Tuple[Any]:
+            parameter_object = getattr(target.mixer_device, prop)
+            self.logger.info("Setting property for %s: %s (new value %s)" % (self.class_identifier, prop, params[0]))
+            parameter_object.value = params[0]
+
+    def _start_mixer_listen(self, target, prop, params: Optional[Tuple] = ()) -> None:
+        parameter_object = getattr(target.mixer_device, prop)
+        def property_changed_callback():
+            value = parameter_object.value
+            self.logger.info("Property %s changed of %s %s: %s" % (prop, self.class_identifier, str(params), value))
+            osc_address = "/live/%s/get_master/%s" % (self.class_identifier, prop)
+            self.osc_server.send(osc_address, (*params, value,))
+
+        listener_key = (prop, tuple(params))
+        if listener_key in self.listener_functions:
+            self._stop_mixer_listen(target, prop, params)
+
+        self.logger.info("Adding listener for %s %s, property: %s" % (self.class_identifier, str(params), prop))
+
+        parameter_object.add_value_listener(property_changed_callback)
+        self.listener_functions[listener_key] = property_changed_callback
+        #--------------------------------------------------------------------------------
+        # Immediately send the current value
+        #--------------------------------------------------------------------------------
+        property_changed_callback()
+
+    def _stop_mixer_listen(self, target, prop, params: Optional[Tuple[Any]] = ()) -> None:
+        parameter_object = getattr(target.mixer_device, prop)
+        listener_key = (prop, tuple(params))
+        if listener_key in self.listener_functions:
+            self.logger.info("Removing listener for %s %s, property %s" % (self.class_identifier, str(params), prop))
+            listener_function = self.listener_functions[listener_key]
+            parameter_object.remove_value_listener(listener_function)
+            del self.listener_functions[listener_key]
+        else:
+            self.logger.warning("No listener function found for property: %s (%s)" % (prop, str(params)))
+
 
     def clear_api(self):
         super().clear_api()
