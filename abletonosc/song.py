@@ -111,16 +111,26 @@ class SongHandler(AbletonOSCHandler):
         self.osc_server.add_handler("/live/song/get_current_smpte_song_time", get_current_smpte_song_time)
 
         #---------------------------------------------------------------------------------
-        # Master Track Mixer device
+        # Master Track Mixer device 
         # --------------------------------------------------------------------------------  
         mixer_properties_rw = ["volume", "panning","cue_volume"]
         for prop in mixer_properties_rw:
-          self.osc_server.add_handler("/live/song/get_master/%s" % prop, partial(self._get_mixer_property, self.song.master_track, prop))
-          self.osc_server.add_handler("/live/song/set_master/%s" % prop, partial(self._set_mixer_property, self.song.master_track, prop))
-          self.osc_server.add_handler("/live/song/start_master_listen/%s" % prop, partial(self._start_mixer_listen, self.song.master_track, prop)) 
-          self.osc_server.add_handler("/live/song/stop_master_listen/%s" % prop, partial(self._stop_mixer_listen, self.song.master_track, prop)) 
+          self.osc_server.add_handler("/live/song/mixer/get_master/%s" % prop, partial(self._get_mixer_property, self.song.master_track, prop))
+          self.osc_server.add_handler("/live/song/mixer/set_master/%s" % prop, partial(self._set_mixer_property, self.song.master_track, prop))
+          self.osc_server.add_handler("/live/song/mixer/start_master_listen/%s" % prop, partial(self._start_mixer_listen, self.song.master_track, prop)) 
+          self.osc_server.add_handler("/live/song/mixer/stop_master_listen/%s" % prop, partial(self._stop_mixer_listen, self.song.master_track, prop)) 
         
+        #---------------------------------------------------------------------------------
+        # Master Track device
+        # --------------------------------------------------------------------------------  
+        master_properties_r = ["output_meter_left","output_meter_right"]
+        for prop in master_properties_r:
+          self.osc_server.add_handler("/live/song/track/get_master/%s" % prop, partial(self._get_property, self.song.master_track, prop))
+          self.osc_server.add_handler("/live/song/track/set_master/%s" % prop, partial(self._set_property, self.song.master_track, prop))
+          self.osc_server.add_handler("/live/song/track/start_master_listen/%s" % prop, partial(self._start_track_listen, self.song.master_track, prop)) 
+          self.osc_server.add_handler("/live/song/track/stop_master_listen/%s" % prop, partial(self._stop_listen, self.song.master_track, prop)) 
         
+
 
         #--------------------------------------------------------------------------------
         # Callbacks for Song: Track properties
@@ -337,7 +347,7 @@ class SongHandler(AbletonOSCHandler):
         def property_changed_callback():
             value = parameter_object.value
             self.logger.info("Property %s changed of %s %s: %s" % (prop, self.class_identifier, str(params), value))
-            osc_address = "/live/%s/get_master/%s" % (self.class_identifier, prop)
+            osc_address = "/live/%s/mixer/get_master/%s" % (self.class_identifier, prop)
             self.osc_server.send(osc_address, (*params, value,))
 
         listener_key = (prop, tuple(params))
@@ -363,7 +373,47 @@ class SongHandler(AbletonOSCHandler):
             del self.listener_functions[listener_key]
         else:
             self.logger.warning("No listener function found for property: %s (%s)" % (prop, str(params)))
+    
+       # -- Changed the OSC Address ../track/..
+    def _start_track_listen(self, target, prop, params: Optional[Tuple] = (), getter = None) -> None:
+        """
+        Start listening for the property named `prop` on the Live object `target`.
+        `params` is typically a tuple containing the track/clip index.
 
+        getter can be used for a customer getter when we're accessing native objects
+        e.g. in view.py we don't return the selected_scene, but the selected_scene index.
+
+        Args:
+            target: 
+            prop:
+            params:
+            getter:
+        """
+        def property_changed_callback():
+            if getter is None:
+                value = getattr(target, prop)
+            else:
+                value = getter(params)
+            if type(value) is not tuple:
+                value = (value,)
+            self.logger.info("Property %s changed of %s %s: %s" % (prop, self.class_identifier, str(params), value))
+            osc_address = "/live/%s/track/get_master/%s" % (self.class_identifier, prop)
+            self.osc_server.send(osc_address, (*params, *value,))
+
+        listener_key = (prop, tuple(params))
+        if listener_key in self.listener_functions:
+            self._stop_listen(target, prop, params)
+
+        self.logger.info("Adding listener for %s %s, property: %s" % (self.class_identifier, str(params), prop))
+        add_listener_function_name = "add_%s_listener" % prop
+        add_listener_function = getattr(target, add_listener_function_name)
+        add_listener_function(property_changed_callback)
+        self.listener_functions[listener_key] = property_changed_callback
+        self.listener_objects[listener_key] = target
+        #--------------------------------------------------------------------------------
+        # Immediately send the current value
+        #--------------------------------------------------------------------------------
+        property_changed_callback()
 
     def clear_api(self):
         super().clear_api()
