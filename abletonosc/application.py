@@ -19,6 +19,12 @@ class ApplicationHandler(AbletonOSCHandler):
             ##log_object_info(Live.Song, obj_name="Application.Song")
             ##self.logger.info("## Song")
             ##log_object_info(Live.Song.Song, obj_name="Application.Song.Song")
+            #self.logger.info("## Song")
+            #master=Live.Track
+            #Live.Song.Song.master_track=master
+            #log_object_info(Live.Song.Song.master_track, obj_name="Application.Song.Song.master_track")
+            #log_object_info(Live.Song.Song.master_track.Track, obj_name="Application.Song.Song.master_track.track")
+
             return application.get_major_version(), application.get_minor_version()
         self.osc_server.add_handler("/live/application/get/version", get_version)
         self.osc_server.send("/live/startup")
